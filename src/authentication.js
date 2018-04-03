@@ -1,6 +1,7 @@
 const authentication = require('@feathersjs/authentication');
 const jwt = require('@feathersjs/authentication-jwt');
 const local = require('@feathersjs/authentication-local');
+const { iff, disallow } = require('feathers-hooks-common');
 
 
 module.exports = function (app) {
@@ -17,6 +18,18 @@ module.exports = function (app) {
   app.service('authentication').hooks({
     before: {
       create: [
+        // iff(hook => hook.data.strategy === 'local', disallow('external')),
+        iff(hook => hook.params.provider == undefined && hook.data.strategy === 'local', hook => {
+          console.log('hook.data', hook.data);
+          hook.params.payload = { userId: 'abcdef123456' };
+          hook.params.authenticated = true;
+          // const query = { email: hook.data.email }
+          // return hook.app.service('users').find({ query }).then(users => {
+          //   hook.params.payload = { userId: users.data[0]._id }
+          //   return hook
+          // })
+          return hook;
+        }),
         authentication.hooks.authenticate(config.strategies)
       ],
       remove: [
@@ -26,7 +39,7 @@ module.exports = function (app) {
     after: {
       // ZM: To bind a user with openid
       create: async function (context) {
-        //console.log('After create:', context);
+        console.log('After create:', context);
         const users = app.service('users');
         const openid = context.data.openid;
         const user = context.params.user;
