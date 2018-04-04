@@ -1,4 +1,5 @@
-const app = require('../../app');
+const oauthApi = require('../../modules/wechat/oauth_api');
+const {promisify} = require('util');
 
 /* eslint-disable no-unused-vars */
 class Service {
@@ -8,34 +9,69 @@ class Service {
   }
 
   async find (params) {
-    // console.log('Authentication:', this.app.service('authentication'));
+    console.log(`params are:`, params);
+    var result = {};
+    var status = 400;
+    var query = params.query || {};
 
-    const { accessToken } = await this.app.service('authentication').create({}, {
-      payload: { userId: 'qlYDb0w5UsJUV7eD' }
-    });
-    console.log('accessToken:', accessToken);
+    switch (query.type) {
+    case 'url':
+      // Call the wechat api
+      var callbackURL = 'http://eqks7z.natappfree.cc/#/launch';
+      var url = oauthApi.getAuthorizeURL(callbackURL,'state','snsapi_userinfo');
+      result = {url};
+      status = 200;
+      break;
 
-    // var res = await this.app.service('authentication').create({
-    //   strategy: 'local',
-    //   email: 'ealeaf@sohu.com',
-    //   password: 'wrongpass'
-    // });
-    // console.log('res', res);
+    case 'token':
+      var code = query.code;
+      var res;
 
-    // call the wechat api
-    // var callbackURL = 'http://7ns9nm.natappfree.cc';
-    // var url = oauthApi.getAuthorizeURL(callbackURL,'state','snsapi_userinfo');
-    // console.log(`params are:`, params);
-    //
-    // switch (params.query.type) {
-    //   case 'code':
-    //     break;
-    // }
+      // Call wechat api
+      const getAccessTokenAsync = promisify(oauthApi.getAccessToken).bind(oauthApi);
+      res = await getAccessTokenAsync(code).catch(err => {
+        console.error('getAccessTokenAsync err:', err);
+      });
+
+      // Query db
+      if(res && res.data) {
+        // we skip result.data.access_token;
+        var openid = res.data.openid;
+        res = await this.app.service('users').find({query: {openid, $limit:1}}).catch(err => {
+          console.error('Find user err:', err);
+        });
+
+        // console.log('Find user:', res);
+        if(res && res.total>0) {
+          // Found user
+          var user = res.data[0];
+          // Generate jwt
+          const { accessToken } = await this.app.service('authentication').create({}, {
+            payload: { userId: user._id }
+          });
+          // console.log('accessToken:', accessToken);
+          result = {
+            found: true,
+            access_token: accessToken
+          };
+          status = 200;
+        }
+        else {
+          // Not found
+          result = {
+            found: false,
+            openid
+          };
+          status = 200;
+        }
+      }
+      break;
+    }
 
     return [{
-      _id: 'url',
-      url: '123',
-      access_token: accessToken
+      _id: 'the-id',
+      status,
+      result
     }];
   }
 

@@ -18,12 +18,6 @@ module.exports = function (app) {
   app.service('authentication').hooks({
     before: {
       create: [
-        // iff(hook => hook.params.provider == undefined && hook.data.strategy === 'local', hook => {
-        //   console.log('hook.data', hook.data);
-        //   hook.params.payload = { userId: 'abcdef123456' };
-        //   hook.params.authenticated = true;
-        //   return hook;
-        // }),
         authentication.hooks.authenticate(config.strategies)
       ],
       remove: [
