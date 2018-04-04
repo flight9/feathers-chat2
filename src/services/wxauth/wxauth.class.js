@@ -9,12 +9,18 @@ class Service {
 
   async find (params) {
     // console.log('Authentication:', this.app.service('authentication'));
-    var res = await this.app.service('authentication').create({
-      strategy: 'local',
-      email: 'ealeaf@sohu.com',
-      password: 'wrongpass'
+
+    const { accessToken } = await this.app.service('authentication').create({}, {
+      payload: { userId: 'qlYDb0w5UsJUV7eD' }
     });
-    console.log('res', res);
+    console.log('accessToken:', accessToken);
+
+    // var res = await this.app.service('authentication').create({
+    //   strategy: 'local',
+    //   email: 'ealeaf@sohu.com',
+    //   password: 'wrongpass'
+    // });
+    // console.log('res', res);
 
     // call the wechat api
     // var callbackURL = 'http://7ns9nm.natappfree.cc';
@@ -28,7 +34,8 @@ class Service {
 
     return [{
       _id: 'url',
-      url: '123'
+      url: '123',
+      access_token: accessToken
     }];
   }
 
