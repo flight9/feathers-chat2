@@ -30,19 +30,20 @@ module.exports = function (app) {
         // console.log('After create:', context);
         const users = app.service('users');
         const openid = context.data.openid;
-        const user = context.params.user;
-        console.log('After create openid:', openid);
-        console.log('After create user:', user);
+        const user = context.params.user; // only authenticated successfully
+        console.log('After create openid & user:', openid, user);
 
-        // If visit from web or automatic login by jwt, the openid must be undefined
-        if( openid && user && !user.openid) {
-          const upd = await users.update(user._id, {$set: {openid}});
-          console.log('After create upd_user', upd);
-
-          // TODO: Redirecting to Home/Wait page should be done on client side
+        // If visit from web or login by jwt, the openid must be undefined
+        if (openid && user ) {
+          if (!user.openid) {
+            const upd = await users.update(user._id, {$set: {openid}});
+            console.log('After create upd_user', upd);
+          }
+          else {
+            // TODO: If a user already had a openid, bind will fail and server should throw an error
+            // or other method to inform the frontend.
+          }
         }
-        // TODO: If a user already had a openid, bind will fail and server should throw an error
-        // or other method to inform the frontend.
 
         return context;
       }
