@@ -2,6 +2,18 @@ const authentication = require('@feathersjs/authentication');
 const jwt = require('@feathersjs/authentication-jwt');
 const local = require('@feathersjs/authentication-local');
 // const { iff, disallow } = require('feathers-hooks-common');
+const oauth2 = require('@feathersjs/authentication-oauth2');
+const Verifier = require('@feathersjs/authentication-oauth2').Verifier;
+const WechatStrategy = require('passport-wechat').Strategy;
+var wxcfg = require('./modules/wechat/config');
+
+class WechatVerifier extends Verifier {
+  // The verify function has the exact same inputs and
+  // return values as a vanilla passport strategy
+  verify(req, accessToken, refreshToken, profile, expiresIn, done) {
+    super.verify(req, accessToken, refreshToken, profile, done);
+  }
+}
 
 
 module.exports = function (app) {
@@ -11,6 +23,22 @@ module.exports = function (app) {
   app.configure(authentication(config));
   app.configure(jwt());
   app.configure(local());
+  app.configure(oauth2({
+    name: 'wechat',
+    Strategy: WechatStrategy,
+    clientID: wxcfg.appId, // Replace this with your app's Client ID
+    appID: wxcfg.appId,
+    clientSecret: wxcfg.appSecret, // Replace this with your app's Client Secret
+    appSecret: wxcfg.appSecret,
+    scope: 'snsapi_userinfo',
+    state: 'state',
+    // callbackURL: 'http://tri.s1.natapp.cc/auth/wechat/callback',
+    callbackURL: 'http://flight9.free.ngrok.cc/auth/wechat/callback',
+    idField: 'openid',
+    successRedirect: '/success',
+    failureRedirect: '/failure',
+    Verifier: WechatVerifier
+  }));
 
   // The `authentication` service is used to create a JWT.
   // The before `create` hook registers strategies that can be used

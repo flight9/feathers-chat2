@@ -1,5 +1,5 @@
 {
-  "name": "feathers-chat",
+  "name": "feathers-chat2",
   "description": "A Feathers chat application",
   "version": "0.0.0",
   "homepage": "https://feathersjs.com",
@@ -26,6 +26,7 @@
     "coverage": "npm run clean && NODE_ENV=test istanbul cover node_modules/mocha/bin/_mocha -- test/ --recursive --exit",
     "eslint": "eslint src/. test/. --config .eslintrc.json --fix",
     "start": "node src/",
+    "startwin": "node %NODE_DEBUG_OPTION% src/",
     "clean": "shx rm -rf test/data/",
     "mocha": "npm run clean && NODE_ENV=test mocha test/ --recursive --exit"
   },
@@ -33,6 +34,7 @@
     "@feathersjs/authentication": "^2.0.1",
     "@feathersjs/authentication-jwt": "^2.0.0",
     "@feathersjs/authentication-local": "^1.0.2",
+    "@feathersjs/authentication-oauth2": "^1.0.3",
     "@feathersjs/configuration": "^1.0.1",
     "@feathersjs/errors": "^3.2.0",
     "@feathersjs/express": "^1.1.2",
@@ -43,6 +45,7 @@
     "feathers-nedb": "^3.0.0",
     "helmet": "^3.9.0",
     "nedb": "^1.8.0",
+    "passport-wechat": "^2.0.4",
     "serve-favicon": "^2.4.5",
     "wechat-oauth": "^1.2.1",
     "winston": "^2.4.0"
