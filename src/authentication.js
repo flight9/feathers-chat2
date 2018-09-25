@@ -3,21 +3,17 @@ const jwt = require('@feathersjs/authentication-jwt');
 const local = require('@feathersjs/authentication-local');
 // const { iff, disallow } = require('feathers-hooks-common');
 const oauth2 = require('@feathersjs/authentication-oauth2');
-const Verifier = require('@feathersjs/authentication-oauth2').Verifier;
 const WechatStrategy = require('passport-wechat').Strategy;
 var wxcfg = require('./modules/wechat/config');
-
-class WechatVerifier extends Verifier {
-  // The verify function has the exact same inputs and
-  // return values as a vanilla passport strategy
-  verify(req, accessToken, refreshToken, profile, expiresIn, done) {
-    super.verify(req, accessToken, refreshToken, profile, done);
-  }
-}
+const makeHandler = require('./oauth-handler');
+const WechatVerifier = require('./wechat-verifier');
 
 
 module.exports = function (app) {
   const config = app.get('authentication');
+
+  // Create a handler by passing the `app` object.
+  const handler = makeHandler(app);
 
   // Set up authentication with the secret
   app.configure(authentication(config));
@@ -32,12 +28,12 @@ module.exports = function (app) {
     appSecret: wxcfg.appSecret,
     scope: 'snsapi_userinfo',
     state: 'state',
-    // callbackURL: 'http://tri.s1.natapp.cc/auth/wechat/callback',
-    callbackURL: 'http://flight9.free.ngrok.cc/auth/wechat/callback',
+    callbackURL: wxcfg.serverDomain + 'auth/wechat/callback', //NOTE domain may changed
     idField: 'openid',
-    successRedirect: '/success',
+    successRedirect: '/success',   //useless if set 'handler'
     failureRedirect: '/failure',
-    Verifier: WechatVerifier
+    Verifier: WechatVerifier,
+    handler: handler(wxcfg.clientDomain + '#/oauth-success')
   }));
 
   // The `authentication` service is used to create a JWT.
