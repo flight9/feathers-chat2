@@ -49,24 +49,34 @@ module.exports = function (app) {
       ]
     },
     after: {
-      // ZM: To bind a user with openid
+      // bind a user with wechat
       create: async function (context) {
-        // console.log('After create:', context);
-        const users = app.service('users');
-        const openid = context.data.openid;
-        const user = context.params.user; // only authenticated successfully
-        console.log('After create openid & user:', openid, user);
+        // console.log('After authentication create:', context);
+        const userService = app.service('users');
+        const strategy = context.data.strategy;
+        const bindOauth = context.data.bindOauth;
+        const oauthUserId = context.data.oauthUserId;
+        const currentUser = context.params.user; // only authenticated successfully
 
-        // If visit from web or login by jwt, the openid must be undefined
-        if (openid && user ) {
-          if (!user.openid) {
-            const upd = await users.update(user._id, {$set: {openid}});
-            console.log('After create upd_user', upd);
-          }
-          else {
-            // TODO: If a user already had a openid, bind will fail and server should throw an error
-            // or other method to inform the frontend.
-          }
+        if (strategy == 'local' && bindOauth &&
+          currentUser.bind_status != 'bound' &&
+          currentUser._id != oauthUserId
+        ) {
+          let oauthUser = await userService.find({query: {_id: oauthUserId}});
+          oauthUser = oauthUser.data[0];
+          let data = {
+            bind_status: 'bound',
+            openid: oauthUser.openid,
+            wechat: Object.assign({}, oauthUser.wechat)
+          };
+
+          // update current user
+          let patchedUser = await userService.patch(currentUser._id, data);
+          console.log('PatchedUser after binding', patchedUser);
+
+          // delete oauth user
+          let deletedUser = await userService.remove(oauthUserId);
+          console.log('deletedUser after binding', deletedUser);
         }
 
         return context;
