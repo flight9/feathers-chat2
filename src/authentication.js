@@ -49,6 +49,7 @@ module.exports = function (app) {
       ]
     },
     after: {
+      /* NOT SUGGESTED: if client logout once, this will fail because of losing oauthUserId
       // bind a user with wechat
       create: async function (context) {
         // console.log('After authentication create:', context);
@@ -81,6 +82,7 @@ module.exports = function (app) {
 
         return context;
       }
+      //*/
     }
   });
 };
