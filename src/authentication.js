@@ -6,7 +6,7 @@ const oauth2 = require('@feathersjs/authentication-oauth2');
 const WechatStrategy = require('passport-wechat').Strategy;
 var wxcfg = require('./modules/wechat/config');
 const makeHandler = require('./oauth-handler');
-const WechatVerifier = require('./wechat-verifier');
+const WechatVerifier = require('./modules/wechat/wechat-verifier');
 
 
 module.exports = function (app) {
