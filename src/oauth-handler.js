@@ -15,7 +15,7 @@ module.exports = function (app) {
     return function (req, res, next) {
       if (req.feathers && req.feathers.payload) {
         app.passport.createJWT(req.feathers.payload, options).then(token => {
-          res.redirect(`${url}?token=${token}`);
+          res.redirect(`${url}?wxjwt=${token}`);
         })
           .catch(error => {
             next(error);

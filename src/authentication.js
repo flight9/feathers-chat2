@@ -3,7 +3,7 @@ const jwt = require('@feathersjs/authentication-jwt');
 const local = require('@feathersjs/authentication-local');
 // const { iff, disallow } = require('feathers-hooks-common');
 const oauth2 = require('@feathersjs/authentication-oauth2');
-const WechatStrategy = require('passport-wechat').Strategy;
+const WechatStrategy = require('passport-wechat').Strategy; //BUG FIX: line 56 in strategy.js should be commented
 var wxcfg = require('./modules/wechat/config');
 const makeHandler = require('./oauth-handler');
 const WechatVerifier = require('./modules/wechat/wechat-verifier');
@@ -33,7 +33,7 @@ module.exports = function (app) {
     successRedirect: '/success',   //useless if set 'handler'
     failureRedirect: '/failure',
     Verifier: WechatVerifier,
-    handler: handler(wxcfg.clientDomain + '#/oauth-success')
+    handler: handler(wxcfg.clientDomain + 'static/dropjwt.html')
   }));
 
   // The `authentication` service is used to create a JWT.
